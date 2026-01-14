@@ -12,17 +12,17 @@ import org.springframework.data.domain.Pageable;
 /*
 public interface CommentService {
 
-    CommentShortResponse addComment(Long postId, CommentRequest request);
+    CommentShortResponse addComment(Integer postId, CommentRequest request);
 
-    CommentShortResponse updateComment(Long postId, Long commentId, CommentRequest request) throws UnauthorizedException;
+    CommentShortResponse updateComment(Integer postId, Integer commentId, CommentRequest request) throws UnauthorizedException;
 
     PageResponse<CommentShortResponse> getComments(Pageable pageable);
 
-    CommentShortResponse getComment(Long id);
+    CommentShortResponse getComment(Integer id);
 
-    void deleteComment(Long id);
+    void deleteComment(Integer id);
 
-    //List<CommentResponse> getCommentByPost(Long postId);
+    //List<CommentResponse> getCommentByPost(Integer postId);
 
     PageResponse<CommentShortResponse> searchComment(Pageable pageable, SearchCommentRequest request);
 

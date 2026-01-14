@@ -37,7 +37,7 @@ public class CategoryController {
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/categories/{id}")
-    public ResponseEntity<CategoryResponse> getCategory(@PathVariable long id) {
+    public ResponseEntity<CategoryResponse> getCategory(@PathVariable Integer id) {
         CategoryResponse category = categoryService.getCategory(id);
         return ResponseEntity.ok(category);
     }
@@ -51,14 +51,14 @@ public class CategoryController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'LIBRARIAN')")
     @PutMapping("/categories/{id}")
-    public ResponseEntity<CategoryResponse> updateCategory(@PathVariable long id, @RequestBody CategoryRequest category) {
+    public ResponseEntity<CategoryResponse> updateCategory(@PathVariable Integer id, @RequestBody CategoryRequest category) {
         CategoryResponse categoryUpdated = categoryService.updateCategory(id, category);
         return ResponseEntity.ok(categoryUpdated);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'LIBRARIAN')")
     @DeleteMapping("/categories/{id}")
-    public ResponseEntity<?> deleteCategory(@PathVariable long id) {
+    public ResponseEntity<?> deleteCategory(@PathVariable Integer id) {
         categoryService.deleteCategory(id);
         Map<String, String> response = Map.of("message", "Delete successful");
         return ResponseEntity.ok(response);

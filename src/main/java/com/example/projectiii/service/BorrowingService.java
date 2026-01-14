@@ -10,16 +10,16 @@ import java.io.IOException;
 
 public interface BorrowingService {
 
-    void deleteBorrowingById(Long id);
+    void deleteBorrowingById(Integer id);
 
     BorrowingResponse addBorrowing(BorrowingRequest request);
 
-    BorrowingResponse getBorrowingById(Long id);
+    BorrowingResponse getBorrowingById(Integer id);
 
-    BorrowingResponse updateBorrowing(Long id, BorrowingRequest request);
+    BorrowingResponse updateBorrowing(Integer id, BorrowingRequest request);
 
-    PageResponse<BorrowingResponse> getBorrowingPage(Pageable pageable);
+   // PageResponse<BorrowingResponse> getBorrowingPage(Pageable pageable);
 
-    void createBorrowingWorkbook(HttpServletResponse response) throws IOException;
+   // void createBorrowingWorkbook(HttpServletResponse response) throws IOException;
 
 }

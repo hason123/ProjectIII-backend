@@ -13,5 +13,5 @@ import java.util.List;
 @AllArgsConstructor
 public class RoleRequest {
     private String description;
-    private List<Long> permissionIds;
+    private List<Integer> permissionIds;
 }

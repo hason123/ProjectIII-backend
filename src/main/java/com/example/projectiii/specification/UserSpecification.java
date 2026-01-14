@@ -1,5 +1,6 @@
 package com.example.projectiii.specification;
 
+import com.example.projectiii.constant.RoleType;
 import com.example.projectiii.entity.Role;
 import com.example.projectiii.entity.User;
 import jakarta.persistence.criteria.Join;
@@ -10,7 +11,7 @@ public class UserSpecification {
         return (root, query, cb)
                 -> cb.like(root.get("userName"), "%" + name.toLowerCase() + "%");
     }
-    public static Specification<User> hasUserID(Long userID){
+    public static Specification<User> hasUserID(Integer userID){
         return (root, query, cb)
                 -> cb.equal(root.get("userID"), userID);
     }
@@ -22,18 +23,24 @@ public class UserSpecification {
         return((root, query, cb) ->
                 cb.equal(root.get("phoneNumber"), "%" + phoneNumber + "%"));
     }
-    public static Specification<User> hasStudentNumber(String studentNumber){
-        return (root, query, cb)
-                -> cb.equal(root.get("studentNumber"), studentNumber);
-    }
     public static Specification<User> likeAddress(String address){
         return (root, query, cb)
                 -> cb.like(root.get("address"), "%" + address + "%");
     }
-    public static Specification<User> hasRole(String roleName){
+   /* public static Specification<User> hasRole(String roleName){
         return (root, query, cb) -> {
             Join<User, Role> roleJoin = root.join("role");
             return cb.equal(roleJoin.get("name"), roleName.toLowerCase());
+        };
+    }*/
+    public static Specification<User> likeGmail(String gmail){
+        return (root, query, cb)
+                -> cb.like(root.get("gmail"), "%" + gmail.toLowerCase() + "%");
+    }
+    public static Specification<User> hasRole(RoleType roleType){
+        return (root, query, cb) -> {
+            Join<User, Role> roleJoin = root.join("role");
+            return cb.equal(roleJoin.get("roleName"), roleType);
         };
     }
 

@@ -19,7 +19,7 @@ public class BookSpecification {
         return (root,query, cb)
                 -> cb.like(root.get("publisher"), "%" + publisher.toLowerCase()+ "%");
     }
-    public static Specification<Book> hasId(Long id) {
+    public static Specification<Book> hasId(Integer id) {
         return (root, query, cb)
                 -> cb.equal(root.get("bookId"), id);
     }

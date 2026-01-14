@@ -10,13 +10,13 @@ import java.io.IOException;
 
 public interface CategoryService {
 
-    CategoryResponse getCategory(Long id);
+    CategoryResponse getCategory(Integer id);
 
     CategoryResponse addCategory(CategoryRequest request);
 
-    CategoryResponse updateCategory(Long id, CategoryRequest request);
+    CategoryResponse updateCategory(Integer id, CategoryRequest request);
 
-    void deleteCategory(Long id);
+    void deleteCategory(Integer id);
 
     PageResponse<CategoryResponse> getAllCategories(Pageable pageable);
 

@@ -14,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CommentResponse {
-    private Long commentId;
+    private Integer commentId;
     private String commentDetail;
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
@@ -23,9 +23,9 @@ public class CommentResponse {
     private String userComment;
     private Integer likes;
     private Integer dislikes;
-    private Long parentId;
+    private Integer parentId;
     private List<CommentResponse> replies;
-   // private Long postId;
+   // private Integer postId;
 
 }
 

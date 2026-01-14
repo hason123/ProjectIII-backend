@@ -1,6 +1,6 @@
 package com.example.projectiii.repository;
 
-import com.example.projectiii.constant.BorrowingType;
+import com.example.projectiii.constant.BorrowingStatus;
 import com.example.projectiii.entity.Book;
 import com.example.projectiii.entity.Borrowing;
 import org.springframework.data.domain.Page;
@@ -12,16 +12,16 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface BorrowingRepository  extends JpaRepository<Borrowing, Long> {
+public interface BorrowingRepository  extends JpaRepository<Borrowing, Integer> {
 
-    @Query("SELECT b FROM Borrowing b ORDER BY CASE WHEN b.returnDate IS NULL THEN 0 ELSE 1 END ASC, b.returnDate DESC")
+/*    @Query("SELECT b FROM Borrowing b ORDER BY CASE WHEN b.returnDate IS NULL THEN 0 ELSE 1 END ASC, b.returnDate DESC")
     Page<Borrowing> findAllCustomSort(Pageable pageable);
 
-    @Query("SELECT b.book FROM Borrowing b WHERE b.status = com.example.projectiii.constant.BorrowingType.BORROWED GROUP BY b.book ORDER BY COUNT(b) DESC")
+    @Query("SELECT b.book FROM Borrowing b WHERE b.status = com.example.projectiii.constant.BorrowingStatus.BORROWED GROUP BY b.book ORDER BY COUNT(b) DESC")
     List<Book> findCurrentBorrowingBooks();
 
     @Query("SELECT b FROM Borrowing b WHERE b.returnDate IS NULL")
-    List<Borrowing> findByStatusBorrowingOrDue();
+    List<Borrowing> findByStatusBorrowingOrDue();*/
 
-    List<Borrowing> findByStatus(BorrowingType borrowingType);
+    List<Borrowing> findByStatus(BorrowingStatus borrowingType);
 }

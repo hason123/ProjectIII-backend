@@ -41,7 +41,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public CategoryResponse getCategory(Long id) {
+    public CategoryResponse getCategory(Integer id) {
         log.info("Getting category with id {}", id);
         Category category = categoryRepository.findById(id).orElse(null);
         if(category == null){
@@ -64,7 +64,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public CategoryResponse updateCategory(Long id, CategoryRequest request) {
+    public CategoryResponse updateCategory(Integer id, CategoryRequest request) {
         log.info("Updating category with id {}", id);
         Category updatedCategory = categoryRepository.findById(id).orElse(null);
         if(updatedCategory == null){
@@ -84,7 +84,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public void deleteCategory(Long id) {
+    public void deleteCategory(Integer id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(messageConfig.getMessage(MessageError.CATEGORY_NOT_FOUND, id)));
         category.getBooks().forEach(book ->
@@ -125,7 +125,7 @@ public class CategoryServiceImpl implements CategoryService {
         //co ve Object[] luu nhieu lieu du lieu khac nhau
         for (Object[] record : result) {
             Category category = (Category) record[0];
-            Long bookCount = (Long) record[1];
+            Integer bookCount = (Integer) record[1];
             Row excelRow = sheet.createRow(rowNum++);
             excelRow.createCell(0).setCellValue(index++);
             excelRow.createCell(1).setCellValue(category.getCategoryName());
@@ -144,6 +144,7 @@ public class CategoryServiceImpl implements CategoryService {
         CategoryResponse categoryDTO = new CategoryResponse();
         categoryDTO.setCategoryName(category.getCategoryName());
         categoryDTO.setCategoryId(category.getCategoryId());
+        categoryDTO.setDescription(category.getDescription());
         List<CategoryResponse.BookBasic> bookBasics =
             Optional.ofNullable(category.getBooks())
                     .orElseGet(Collections::emptyList)

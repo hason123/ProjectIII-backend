@@ -21,7 +21,7 @@ public class Book extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "book_id")
-    private Long bookId;
+    private Integer bookId;
     @Column(name = "book_Name")
     private String bookName;
     @Column(name = "author")
@@ -38,6 +38,11 @@ public class Book extends BaseEntity {
     private Integer quantity;
     @Column(name = "book_desc", columnDefinition = "MEDIUMTEXT")
     private String bookDesc;
+    @Column(name = "image_url", columnDefinition = "MEDIUMTEXT")
+    private String imageUrl;
+    @Column(name = "cloudinary_image_id")
+    private String cloudinaryImageId;
+    private Double ratings;
     @ManyToMany
     @JoinTable(
             name = "book_category",

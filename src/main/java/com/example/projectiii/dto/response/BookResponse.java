@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BookResponse {
-    private Long bookId;
+    private Integer bookId;
     private String bookName;
     private String author;
     private String publisher;
@@ -21,6 +21,8 @@ public class BookResponse {
     private String language;
     private Integer quantity;
     private String bookDesc;
+    private String imageUrl;
+    private String cloudinaryImageId;
     private List<CategoryDTO> categories;
 
     @Getter
@@ -28,7 +30,7 @@ public class BookResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class CategoryDTO {
-        private Long categoryId;
+        private Integer categoryId;
         private String categoryName;
     }
 }

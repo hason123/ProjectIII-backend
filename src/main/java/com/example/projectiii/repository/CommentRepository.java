@@ -8,12 +8,12 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface CommentRepository extends JpaRepository<Comment, Long>, JpaSpecificationExecutor<Comment> {
-    List<Comment> findAllByBook_BookId(Long bookId);
+public interface CommentRepository extends JpaRepository<Comment, Integer>, JpaSpecificationExecutor<Comment> {
+    List<Comment> findAllByBook_BookId(Integer bookId);
 
-    List<Comment> findAllByUser_UserId(Long userId);
+    List<Comment> findAllByUser_Id(Integer id);
 
-    List<Comment> findAllByParent_CommentId(Long parentCommentId);
+    List<Comment> findAllByParent_CommentId(Integer parentCommentId);
 
 
 

@@ -25,21 +25,21 @@ public class RoleController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/roles/{id}")
-    public ResponseEntity<RoleResponse> updateRole(@PathVariable long id, @RequestBody RoleRequest request) {
+    public ResponseEntity<RoleResponse> updateRole(@PathVariable Integer id, @RequestBody RoleRequest request) {
         RoleResponse roleUpdated = roleService.updateRole(request, id);
         return ResponseEntity.ok(roleUpdated);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/roles/{id}")
-    public ResponseEntity<RoleResponse> getRole(@PathVariable long id) {
+    public ResponseEntity<RoleResponse> getRole(@PathVariable Integer id) {
         RoleResponse role = roleService.getRole(id);
         return ResponseEntity.ok(role);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/roles/{id}")
-    public ResponseEntity<?> deleteRole(@PathVariable long id) {
+    public ResponseEntity<?> deleteRole(@PathVariable Integer id) {
         roleService.deleteRole(id);
         Map<String, String> response = Map.of("message", "Delete successful");
         return ResponseEntity.ok(response);

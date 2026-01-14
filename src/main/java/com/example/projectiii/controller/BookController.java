@@ -3,7 +3,9 @@ package com.example.projectiii.controller;
 import com.example.projectiii.dto.request.BookRequest;
 import com.example.projectiii.dto.request.search.SearchBookRequest;
 import com.example.projectiii.dto.response.BookResponse;
+import com.example.projectiii.dto.response.CloudinaryResponse;
 import com.example.projectiii.dto.response.PageResponse;
+import com.example.projectiii.service.BookService;
 import com.example.projectiii.service.impl.BookServiceImpl;
 //import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
@@ -21,9 +23,9 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/library")
 public class BookController {
-    private final BookServiceImpl bookService;
+    private final BookService bookService;
 
-    public BookController(BookServiceImpl bookService) {
+    public BookController(BookService bookService) {
         this.bookService = bookService;
     }
 
@@ -39,7 +41,7 @@ public class BookController {
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/books/{id}")
-    public ResponseEntity<BookResponse> getBookById(@PathVariable("id") long id) {
+    public ResponseEntity<BookResponse> getBookById(@PathVariable("id") Integer id) {
         BookResponse bookResponse = bookService.getBookById(id);
         return ResponseEntity.status(HttpStatus.OK).body(bookResponse);
     }
@@ -64,14 +66,14 @@ public class BookController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'LIBRARIAN')")
     @PutMapping("/books/{id}")
-    public ResponseEntity<BookResponse> updateBook(@PathVariable("id") long id, @RequestBody BookRequest book) {
+    public ResponseEntity<BookResponse> updateBook(@PathVariable("id") Integer id, @RequestBody BookRequest book) {
         BookResponse bookUpdated = bookService.updateBook(id, book);
         return ResponseEntity.status(200).body(bookUpdated);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'LIBRARIAN')")
     @DeleteMapping("/books/{id}")
-    public ResponseEntity<?> deleteBook(@PathVariable("id") long id) {
+    public ResponseEntity<?> deleteBook(@PathVariable("id") Integer id) {
         bookService.deleteBookById(id);
         Map<String, String> response = Map.of("message", "Delete successful");
         return ResponseEntity.ok(response);
@@ -94,6 +96,13 @@ public class BookController {
         Map<String, String> message = Map.of("message", "Import successful!");
         return ResponseEntity.ok(message);
     }
+
+    @PutMapping("/books/{id}/image")
+    public ResponseEntity<CloudinaryResponse> uploadImage(@PathVariable final Integer id, @RequestPart final MultipartFile file) {
+        CloudinaryResponse bookImage = bookService.uploadImage(id, file);
+        return ResponseEntity.ok(bookImage);
+    }
+
 
 
 }

@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 import java.util.Optional;
 
-public interface CategoryRepository extends JpaRepository<Category, Long> {
+public interface CategoryRepository extends JpaRepository<Category, Integer> {
     @Query("SELECT c, COUNT(b) FROM Category c LEFT JOIN c.books b GROUP BY c")
     List<Object[]> findCategoryAndBookCount();
 

@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface BookRepository extends JpaRepository<Book, Long> , JpaSpecificationExecutor<Book> {
+public interface BookRepository extends JpaRepository<Book, Integer> , JpaSpecificationExecutor<Book> {
 /*
     @Query("SELECT b FROM Book b WHERE " +
             "LOWER(b.bookId) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +

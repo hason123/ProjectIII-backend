@@ -12,7 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SearchBookRequest {
-    private Long bookId;
+    private Integer bookId;
     private String bookName;
     private String author;
     private String publisher;

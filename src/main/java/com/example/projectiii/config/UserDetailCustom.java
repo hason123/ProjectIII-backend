@@ -1,6 +1,7 @@
 package com.example.projectiii.config;
 
 import com.example.projectiii.entity.User;
+import com.example.projectiii.exception.UnauthorizedException;
 import com.example.projectiii.service.UserService;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,9 +23,19 @@ public class UserDetailCustom implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         System.out.println("Trying to find user with username: " + username);
 
-        User user = userService.handleGetUserByUserName(username);
+        User user;
+
+        if(username.contains("@")){
+            user = userService.handleGetUserByGmail(username);
+        }
+        else{
+            user = userService.handleGetUserByUserName(username);
+        }
         if (user == null) {
             throw new UsernameNotFoundException("User not found: " + username);
+        }
+        if (!user.isVerified()) {
+            throw new UnauthorizedException("Chưa xác thực OTP");
         }
 
         String roleName = user.getRole().getRoleName().name();

@@ -48,7 +48,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public CommentShortResponse addComment(Long postId, CommentRequest request) {
+    public CommentShortResponse addComment(Integer postId, CommentRequest request) {
         log.info("Add comment in post with id: {}", postId);
         Post post = postRepository.findById(postId).orElseThrow(() -> new ResourceNotFoundException(MessageError.POST_NOT_FOUND));
         Comment comment = new Comment();
@@ -65,7 +65,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public CommentShortResponse updateComment(Long postId, Long commentId, CommentRequest request) throws UnauthorizedException {
+    public CommentShortResponse updateComment(Integer postId, Integer commentId, CommentRequest request) throws UnauthorizedException {
         log.info("Update comment in post with id: {}", postId);
         if(!postRepository.existsById(postId)){
             log.error("Post with id: {} not found", postId);
@@ -103,7 +103,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public CommentShortResponse getComment(Long id) {
+    public CommentShortResponse getComment(Integer id) {
         log.info("Getting comment with id: {}", id);
         Optional<Comment> commentOptional = commentRepository.findById(id);
         if(commentOptional.isPresent()) {
@@ -117,7 +117,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public void deleteComment(Long id){
+    public void deleteComment(Integer id){
         log.info("Deleting comment with id: {}", id);
         Comment commentDeleted = commentRepository.findById(id).orElseThrow(() ->
         {

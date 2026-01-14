@@ -85,15 +85,5 @@ public class SecurityUtil {
             throw e;
         }
     }
-
-    public static Optional<String> getCurrentUserLogin() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated()) {
-            return Optional.empty();
-        }
-        return Optional.of(auth.getName());
-    }
-
-
 }
 

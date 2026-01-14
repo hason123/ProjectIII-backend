@@ -1,7 +1,7 @@
 package com.example.projectiii.service.impl;
 
 import com.example.projectiii.config.MessageConfig;
-import com.example.projectiii.constant.BorrowingType;
+import com.example.projectiii.constant.BorrowingStatus;
 import com.example.projectiii.constant.MessageError;
 import com.example.projectiii.dto.request.BorrowingRequest;
 import com.example.projectiii.dto.response.BorrowingResponse;
@@ -27,9 +27,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-import com.example.projectiii.constant.MessageError;
-import com.example.projectiii.constant.BorrowingType;
+
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
@@ -50,7 +48,7 @@ public class BorrowingServiceImpl implements BorrowingService {
     }
 
     @Override
-    public BorrowingResponse getBorrowingById(Long id) {
+    public BorrowingResponse getBorrowingById(Integer id) {
         log.info("Getting borrowing by id {}", id);
         Borrowing borrowing = borrowingRepository.findById(id).orElseThrow(() ->
         {
@@ -61,13 +59,13 @@ public class BorrowingServiceImpl implements BorrowingService {
     }
 
     @Override
-    public void deleteBorrowingById(Long id) {
+    public void deleteBorrowingById(Integer id) {
         Borrowing borrowing = borrowingRepository.findById(id).orElseThrow(() ->
         {
             log.error(messageConfig.getMessage(MessageError.BORROWING_NOT_FOUND, id));
             return new ResourceNotFoundException(messageConfig.getMessage(MessageError.BORROWING_NOT_FOUND, id));
         });
-        if (borrowing.getReturnDate() != null) {
+        if (borrowing.getReturnedDate() != null) {
             borrowing.getBook().setQuantity(borrowing.getBook().getQuantity() + 1);
             bookRepository.save(borrowing.getBook());
         }
@@ -102,37 +100,37 @@ public class BorrowingServiceImpl implements BorrowingService {
             if(request.getReturnDate().isBefore(request.getBorrowingDate())) {
                 throw new BusinessException(messageConfig.getMessage(MessageError.BORROWING_RETURNDATE_INVALID));
             }
-            borrowing.setReturnDate(request.getReturnDate());
+            borrowing.setReturnedDate(request.getReturnDate());
             if(request.getReturnDate().isAfter(request.getBorrowingDate().plusMonths(1))) {
-                borrowing.setStatus(BorrowingType.OVERDUE);
+                borrowing.setStatus(BorrowingStatus.OVERDUE);
             }
-            else borrowing.setStatus(BorrowingType.RETURNED);
+            else borrowing.setStatus(BorrowingStatus.RETURNED);
         }
         else {
             if(LocalDate.now().isAfter(request.getBorrowingDate().plusMonths(1))) {
-                borrowing.setStatus(BorrowingType.OVERDUE);
+                borrowing.setStatus(BorrowingStatus.OVERDUE);
             }
             else{
-                borrowing.setStatus(BorrowingType.BORROWED);
+                borrowing.setStatus(BorrowingStatus.BORROWING);
             }
             bookAdded.setQuantity(bookAdded.getQuantity() - 1);
             bookRepository.save(bookAdded);
         }
-        if (checkDuplicate(borrowing)) {
+        /*if (checkDuplicate(borrowing)) {
             log.error(messageConfig.getMessage(MessageError.BORROWING_WRONG_DATE));
             throw new BusinessException(messageConfig.getMessage(MessageError.BORROWING_WRONG_DATE));
-        }
+        }*/
         borrowingRepository.save(borrowing);
         return convertBorrowingToDTO(borrowing);
     }
 
     @Override
     @Transactional
-    public BorrowingResponse updateBorrowing(Long id, BorrowingRequest request) {
+    public BorrowingResponse updateBorrowing(Integer id, BorrowingRequest request) {
         log.info("Update borrowing with id {}", id);
         Borrowing borrowing = borrowingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(messageConfig.getMessage(MessageError.BORROWING_NOT_FOUND, id)));
-        BorrowingType prevStatus = borrowing.getStatus();
+        BorrowingStatus prevStatus = borrowing.getStatus();
         if (request.getUserId() != null) {
             User user = userRepository.findById(request.getUserId())
                     .orElseThrow(() -> new ResourceNotFoundException(messageConfig.getMessage(MessageError.USER_NOT_FOUND, request.getUserId())));
@@ -155,21 +153,21 @@ public class BorrowingServiceImpl implements BorrowingService {
                     throw new BusinessException(messageConfig.getMessage(MessageError.BORROWING_WRONG_DATE));
                 }
             }
-            borrowing.setReturnDate(request.getReturnDate());
+            borrowing.setReturnedDate(request.getReturnDate());
             if (request.getReturnDate().isAfter(
                     (request.getBorrowingDate() != null ? request.getBorrowingDate().plusMonths(1) : borrowing.getBorrowDate()).plusMonths(1)
             )) {
-                borrowing.setStatus(BorrowingType.OVERDUE);
+                borrowing.setStatus(BorrowingStatus.OVERDUE);
             } else {
-                borrowing.setStatus(BorrowingType.RETURNED);
+                borrowing.setStatus(BorrowingStatus.RETURNED);
             }
         }
         else{
-            borrowing.setReturnDate(null);
+            borrowing.setReturnedDate(null);
             if (LocalDate.now().isAfter(request.getBorrowingDate().plusMonths(1))) {
-                borrowing.setStatus(BorrowingType.OVERDUE);
+                borrowing.setStatus(BorrowingStatus.OVERDUE);
             } else {
-                borrowing.setStatus(BorrowingType.BORROWED);
+                borrowing.setStatus(BorrowingStatus.BORROWING);
             }
         }
         if (request.getBookId() != null) {
@@ -181,7 +179,7 @@ public class BorrowingServiceImpl implements BorrowingService {
                     log.error(messageConfig.getMessage(MessageError.BOOK_OUT_OF_STOCK));
                     throw new BusinessException(messageConfig.getMessage(MessageError.BOOK_OUT_OF_STOCK, request.getBookId()));
                 }
-                if(borrowing.getStatus() != BorrowingType.RETURNED) {
+                if(borrowing.getStatus() != BorrowingStatus.RETURNED) {
                     oldBook.setQuantity(oldBook.getQuantity() + 1);
                     bookRepository.save(oldBook);
                     newBook.setQuantity(newBook.getQuantity() - 1);
@@ -193,12 +191,12 @@ public class BorrowingServiceImpl implements BorrowingService {
         }
         else borrowing.setBook(borrowing.getBook());
 
-        if (checkDuplicate(borrowing)) {
+        /*if (checkDuplicate(borrowing)) {
             throw new BusinessException(messageConfig.getMessage(MessageError.BORROWING_WRONG_DATE));
-        }
+        }*/
 
         // Only handle returned status if status changed
-        if (borrowing.getStatus() == BorrowingType.RETURNED && prevStatus != BorrowingType.RETURNED) {
+        if (borrowing.getStatus() == BorrowingStatus.RETURNED && prevStatus != BorrowingStatus.RETURNED) {
             Book returnedBook = borrowing.getBook();
             returnedBook.setQuantity(returnedBook.getQuantity() + 1);
             bookRepository.save(returnedBook);
@@ -208,7 +206,7 @@ public class BorrowingServiceImpl implements BorrowingService {
         return convertBorrowingToDTO(borrowing);
     }
 
-    @Override
+   /* @Override
     public PageResponse<BorrowingResponse> getBorrowingPage(Pageable pageable) {
         Page<Borrowing> borrowingPage = borrowingRepository.findAllCustomSort(pageable);
         Page<BorrowingResponse> borrowingResponseDTO = borrowingPage.map(this::convertBorrowingToDTO);
@@ -218,21 +216,21 @@ public class BorrowingServiceImpl implements BorrowingService {
                 borrowingResponseDTO.getTotalPages(),
                 borrowingResponseDTO.getContent()
         );
-    }
+    }*/
 
     @Scheduled(cron = "0 0 0 * * *")
     @Transactional
     public void borrowingStatus(){
         LocalDate currentDate = LocalDate.now();
-        for(Borrowing borrowing : borrowingRepository.findByStatus(BorrowingType.BORROWED)){
-            if (borrowing.getReturnDate() != null && currentDate.isAfter(borrowing.getBorrowDate().plusMonths(1))) {
-                borrowing.setStatus(BorrowingType.OVERDUE);
+        for(Borrowing borrowing : borrowingRepository.findByStatus(BorrowingStatus.BORROWING)){
+            if (borrowing.getReturnedDate() != null && currentDate.isAfter(borrowing.getBorrowDate().plusMonths(1))) {
+                borrowing.setStatus(BorrowingStatus.OVERDUE);
                 borrowingRepository.save(borrowing);
             }
         }
     }
 
-    private boolean checkDuplicate(Borrowing borrowing) {
+    /*private boolean checkDuplicate(Borrowing borrowing) {
         List<Borrowing> borrowingList = borrowingRepository.findByStatusBorrowingOrDue();
         for(Borrowing b : borrowingList){
                 if(borrowing.getBook().equals(b.getBook()) && borrowing.getUser().equals(b.getUser())) {
@@ -240,9 +238,9 @@ public class BorrowingServiceImpl implements BorrowingService {
                 }
             }
         return false;
-    }
+    }*/
 
-    @Override
+   /* @Override
     public void createBorrowingWorkbook(HttpServletResponse response) throws IOException {
         List<Book> books = borrowingRepository.findCurrentBorrowingBooks();
         Workbook workbook = new XSSFWorkbook();
@@ -262,13 +260,13 @@ public class BorrowingServiceImpl implements BorrowingService {
         workbook.write(outputStream);
         workbook.close();
         outputStream.close();
-    }
+    }*/
 
     public BorrowingResponse convertBorrowingToDTO(Borrowing borrowing) {
         BorrowingResponse borrowingDTO = new BorrowingResponse();
         borrowingDTO.setBorrowingId(borrowing.getId());
         borrowingDTO.setBorrowingDate(borrowing.getBorrowDate());
-        borrowingDTO.setReturnDate(borrowing.getReturnDate());
+        borrowingDTO.setReturnDate(borrowing.getReturnedDate());
         borrowingDTO.setUsername(borrowing.getUser().getUserName());
         borrowingDTO.setBookName(borrowing.getBook().getBookName());
         borrowingDTO.setStatus(borrowing.getStatus().toString());

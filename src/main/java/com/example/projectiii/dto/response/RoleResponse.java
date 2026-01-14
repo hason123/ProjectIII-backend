@@ -11,7 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RoleResponse {
-    private Long roleId;
+    private Integer roleId;
     private String roleName;
     private String description;
     private List<PermissionDTO> permission;
@@ -21,7 +21,7 @@ public class RoleResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class PermissionDTO{
-        private Long permissionId;
+        private Integer permissionId;
         private String permissionName;
     }
 }

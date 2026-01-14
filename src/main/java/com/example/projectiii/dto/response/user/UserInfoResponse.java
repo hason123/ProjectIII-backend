@@ -11,13 +11,15 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserInfoResponse {
-    private Long userId;
+    private Integer id;
     private String userName;
-    private String password;
+    //private String password;
     private String fullName;
     private String phoneNumber;
-    private String studentNumber;
     private LocalDate birthday;
     private String address;
     private String roleName;
+    private String gmail;
+    private String imageUrl;
+    private String cloudinaryImageId;
 }

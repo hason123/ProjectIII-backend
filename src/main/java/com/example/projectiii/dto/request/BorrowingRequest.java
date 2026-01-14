@@ -15,15 +15,10 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BorrowingRequest {
-    @NotNull(message = "{error.borrowing.date.null}")
     @JsonFormat(pattern = "yyyy-MM-dd")
-    @PastOrPresent(message = "{error.borrowing.date.invalid}")
     private LocalDate borrowingDate;
     @JsonFormat(pattern = "yyyy-MM-dd")
-    @PastOrPresent(message = "{error.borrowing.date.invalid}")
     private LocalDate returnDate;
-    @NotNull(message = "{error.borrowing.userId.null}")
-    private Long userId;
-    @NotNull(message = "{error.borrowing.bookId.null}")
-    private Long bookId;
+    private Integer userId;
+    private Integer bookId;
 }

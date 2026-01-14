@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BorrowingResponse {
-    private Long borrowingId;
+    private Integer borrowingId;
     private String username;
     private String bookName;
     private LocalDate borrowingDate;

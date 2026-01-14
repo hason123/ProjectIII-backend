@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CommentShortResponse {
-    private Long commentId;
+    private Integer commentId;
     private String commentDetail;
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
@@ -18,7 +18,7 @@ public class CommentShortResponse {
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private String userComment;
     private Integer commentLikes;
-    private Long postId;
+    private Integer postId;
     private Integer commentDislikes;
 
 }

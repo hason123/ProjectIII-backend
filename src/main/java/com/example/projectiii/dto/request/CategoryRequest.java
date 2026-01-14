@@ -8,4 +8,5 @@ import lombok.Setter;
 @Getter
 public class CategoryRequest {
     private String categoryName;
+    private String description;
 }

@@ -11,7 +11,8 @@ import lombok.Setter;
 @AllArgsConstructor
 public class SearchUserRequest {
     private String userName;
-    private Long userId;
+    private String fullName;
+    private String studentNumber;
     private String roleName;
-   // private LocalDate birthday;
+    private String gmail;
 }

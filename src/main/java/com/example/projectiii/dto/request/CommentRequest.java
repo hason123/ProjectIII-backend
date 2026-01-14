@@ -13,5 +13,5 @@ import lombok.Setter;
 public class CommentRequest {
     @NotBlank(message = "error.comment.content.null")
     private String content;
-    private Long parentCommentId;
+    private Integer parentCommentId;
 }

@@ -12,15 +12,16 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CategoryResponse {
-    private Long categoryId;
+    private Integer categoryId;
     private String categoryName;
+    private String description;
     private List<BookBasic> books = new ArrayList<>();
     @Setter
     @Getter
     @AllArgsConstructor
     @NoArgsConstructor
     public static class BookBasic{
-        private Long bookId;
+        private Integer bookId;
         private String bookName;
     }
 }

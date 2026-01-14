@@ -5,7 +5,6 @@ import com.example.projectiii.dto.response.BorrowingResponse;
 import com.example.projectiii.dto.response.PageResponse;
 import com.example.projectiii.exception.ResourceNotFoundException;
 import com.example.projectiii.service.BorrowingService;
-//import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.PageRequest;
@@ -26,7 +25,7 @@ public class BorrowingController {
         this.borrowingService = borrowingService;
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'LIBRARIAN')")
+    /*@PreAuthorize("hasAnyRole('ADMIN', 'LIBRARIAN')")
     @GetMapping("/borrows")
     public ResponseEntity<?> getBorrowingPage(@RequestParam(value = "pageNumber", required = false) Integer pageNumber,
                                          @RequestParam(value = "pageSize", required = false) Integer pageSize)
@@ -34,11 +33,11 @@ public class BorrowingController {
         Pageable pageable = PageRequest.of(pageNumber - 1, pageSize); //da sort trong lop service
         PageResponse<BorrowingResponse> borrowingPage = borrowingService.getBorrowingPage(pageable);
         return ResponseEntity.ok(borrowingPage);
-    }
+    }*/
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/borrows/{id}")
-    public ResponseEntity<BorrowingResponse> getBorrowingById(@PathVariable Long id) throws ResourceNotFoundException {
+    public ResponseEntity<BorrowingResponse> getBorrowingById(@PathVariable Integer id) throws ResourceNotFoundException {
         BorrowingResponse borrowing = borrowingService.getBorrowingById(id);
         return ResponseEntity.status(HttpStatus.OK).body(borrowing);
     }
@@ -52,24 +51,24 @@ public class BorrowingController {
 
     @PreAuthorize("isAuthenticated()")
     @PutMapping("/borrows/{id}")
-    public ResponseEntity<BorrowingResponse> updateBorrowing(@PathVariable Long id, @Valid @RequestBody BorrowingRequest borrowing) {
+    public ResponseEntity<BorrowingResponse> updateBorrowing(@PathVariable Integer id, @Valid @RequestBody BorrowingRequest borrowing) {
         BorrowingResponse borrowingUpdated = borrowingService.updateBorrowing(id, borrowing);
         return ResponseEntity.ok(borrowingUpdated);
     }
 
     @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/borrows/{id}")
-    public ResponseEntity<?> deleteBorrowing(@PathVariable Long id) {
+    public ResponseEntity<?> deleteBorrowing(@PathVariable Integer id) {
         borrowingService.deleteBorrowingById(id);
         Map<String, String> response = Map.of("message", "Delete successful");
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'LIBRARIAN')")
+   /* @PreAuthorize("hasAnyRole('ADMIN', 'LIBRARIAN')")
     @GetMapping("/borrows/dashboard")
     public ResponseEntity<?> getBorrowingDashboard(HttpServletResponse response) throws IOException {
         response.setHeader("Content-Type", "attachment; filename=borrowing.xlsx");
         borrowingService.createBorrowingWorkbook(response);
         return ResponseEntity.status(HttpStatus.OK).build();
-    }
+    }*/
 }

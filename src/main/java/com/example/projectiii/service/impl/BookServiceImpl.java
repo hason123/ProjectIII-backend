@@ -5,6 +5,7 @@ import com.example.projectiii.constant.MessageError;
 import com.example.projectiii.dto.request.BookRequest;
 import com.example.projectiii.dto.request.search.SearchBookRequest;
 import com.example.projectiii.dto.response.BookResponse;
+import com.example.projectiii.dto.response.CloudinaryResponse;
 import com.example.projectiii.dto.response.PageResponse;
 import com.example.projectiii.entity.Book;
 import com.example.projectiii.entity.Category;
@@ -12,7 +13,9 @@ import com.example.projectiii.exception.ResourceNotFoundException;
 import com.example.projectiii.repository.BookRepository;
 import com.example.projectiii.repository.CategoryRepository;
 import com.example.projectiii.service.BookService;
+import com.example.projectiii.service.CloudinaryService;
 import com.example.projectiii.specification.BookSpecification;
+import com.example.projectiii.utils.FileUploadUtil;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +28,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -40,11 +44,13 @@ public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
     private final CategoryRepository categoryRepository;
     private final MessageConfig messageConfig;
+    private final CloudinaryService cloudinaryService;
 
-    public BookServiceImpl(BookRepository bookRepository, CategoryRepository categoryRepository, MessageConfig messageConfig) {
+    public BookServiceImpl(BookRepository bookRepository, CategoryRepository categoryRepository, MessageConfig messageConfig, CloudinaryService cloudinaryService) {
         this.bookRepository = bookRepository;
         this.categoryRepository = categoryRepository;
         this.messageConfig = messageConfig;
+        this.cloudinaryService = cloudinaryService;
     }
 
     @Override
@@ -77,7 +83,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public BookResponse getBookById(Long id) {
+    public BookResponse getBookById(Integer id) {
         log.info("Getting book with id: {}", id);
         Book book = bookRepository.findById(id).orElse(null);
         if(book == null){
@@ -89,7 +95,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public void deleteBookById(Long id) {
+    public void deleteBookById(Integer id) {
         log.info("Deleting book with id: {}", id);
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> {
@@ -102,7 +108,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public BookResponse updateBook(Long id, BookRequest request) {
+    public BookResponse updateBook(Integer id, BookRequest request) {
         log.info("Updating book with id: {}", id);
         Book updatedBook = bookRepository.findById(id).orElse(null);
         if(updatedBook == null){
@@ -155,7 +161,7 @@ public class BookServiceImpl implements BookService {
         log.info("Searching books with request: {}", request);
         String bookName = request.getBookName();
         String author = request.getAuthor();
-        Long bookId = request.getBookId();
+        Integer bookId = request.getBookId();
         String language = request.getLanguage();
         String printType = request.getPrintType();
         String publisher = request.getPublisher();
@@ -227,6 +233,23 @@ public class BookServiceImpl implements BookService {
         return pageDTO;
     }
 
+    @Transactional
+    public CloudinaryResponse uploadImage(final Integer id, final MultipartFile file) {
+        final Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        final String cloudinaryImageId = book.getCloudinaryImageId();
+        if(StringUtils.hasText(cloudinaryImageId)) {
+           cloudinaryService.deleteFile(cloudinaryImageId);
+        }
+        FileUploadUtil.assertAllowed(file, FileUploadUtil.IMAGE_PATTERN);
+        final String fileName = FileUploadUtil.getFileName(file.getOriginalFilename());
+        final CloudinaryResponse response = this.cloudinaryService.uploadFile(file, fileName);
+        book.setImageUrl(response.getUrl());
+        book.setCloudinaryImageId(response.getPublicId());
+        bookRepository.save(book);
+        return response;
+    }
+
     @Override
     public void exportBookWorkbook(HttpServletResponse response) throws IOException {
         log.info("Creating book workbook");
@@ -289,9 +312,9 @@ public class BookServiceImpl implements BookService {
             // Validate category
             List<Category> categories = new ArrayList<>();
             for (String catIdStr : categoryIdArr) {
-                long catId;
+                int catId;
                 try {
-                    catId = Long.parseLong(catIdStr.trim());
+                    catId = Integer.parseInt(catIdStr.trim());
                 } catch (NumberFormatException e) {
                     continue;
                 }
@@ -326,6 +349,8 @@ public class BookServiceImpl implements BookService {
         bookDTO.setPrintType(book.getPrintType());
         bookDTO.setLanguage(book.getLanguage());
         bookDTO.setBookDesc(book.getBookDesc());
+        bookDTO.setImageUrl(book.getImageUrl());
+        bookDTO.setCloudinaryImageId(book.getCloudinaryImageId());
         List<BookResponse.CategoryDTO> categoryDTOs =
                 Optional.ofNullable(book.getCategories())
                         .orElseGet(Collections::emptyList)
