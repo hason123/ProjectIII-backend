@@ -34,9 +34,9 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Value("${spring.security.oauth2.client.registration.google.client-id}")
+    /*@Value("${spring.security.oauth2.client.registration.google.client-id}")
     private String googleClientId;
-
+*/
     public AuthServiceImpl(AuthenticationManagerBuilder authenticationManagerBuilder, SecurityUtil securityUtil, UserService userService, OtpService otpService, UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.authenticationManagerBuilder = authenticationManagerBuilder;
         this.securityUtil = securityUtil;
