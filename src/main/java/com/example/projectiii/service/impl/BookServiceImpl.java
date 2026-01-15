@@ -213,7 +213,7 @@ public class BookServiceImpl implements BookService {
         return new PageResponse<>(
                 bookResponse.getNumber() + 1,
                 bookResponse.getTotalPages(),
-                bookResponse.getNumberOfElements(),
+                bookResponse.getTotalElements(),
                 bookResponse.getContent()
         );
     }
@@ -226,7 +226,7 @@ public class BookServiceImpl implements BookService {
         PageResponse<BookResponse> pageDTO = new PageResponse<>(
                 bookResponse.getNumber() + 1,
                 bookResponse.getTotalPages(),
-                bookResponse.getNumberOfElements(),
+                bookResponse.getTotalElements(),
                 bookResponse.getContent()
                 );
         log.info("Returning books with {} books found", pageDTO.getTotalElements());

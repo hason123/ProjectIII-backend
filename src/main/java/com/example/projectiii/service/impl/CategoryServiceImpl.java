@@ -59,6 +59,7 @@ public class CategoryServiceImpl implements CategoryService {
             throw new DataIntegrityViolationException(messageConfig.getMessage(MessageError.CATEGORY_NAME_UNIQUE));
         }
         else category.setCategoryName(request.getCategoryName());
+        category.setDescription(request.getDescription());
         categoryRepository.save(category);
         return convertEntityToDTO(category);
     }
@@ -76,6 +77,9 @@ public class CategoryServiceImpl implements CategoryService {
                 updatedCategory.setCategoryName(updatedCategory.getCategoryName());
             }
             else updatedCategory.setCategoryName(request.getCategoryName());
+        }
+        if(request.getDescription() != null){
+            updatedCategory.setCategoryName(request.getCategoryName());
         }
         else updatedCategory.setCategoryName(updatedCategory.getCategoryName());
         categoryRepository.save(updatedCategory);

@@ -49,10 +49,8 @@ public class BorrowingServiceImpl implements BorrowingService {
 
     @Override
     public BorrowingResponse getBorrowingById(Integer id) {
-        log.info("Getting borrowing by id {}", id);
         Borrowing borrowing = borrowingRepository.findById(id).orElseThrow(() ->
         {
-            log.error(messageConfig.getMessage(MessageError.BORROWING_NOT_FOUND, id));
             return new ResourceNotFoundException(messageConfig.getMessage(MessageError.BORROWING_NOT_FOUND, id));
         });
         return convertBorrowingToDTO(borrowing);
@@ -62,7 +60,6 @@ public class BorrowingServiceImpl implements BorrowingService {
     public void deleteBorrowingById(Integer id) {
         Borrowing borrowing = borrowingRepository.findById(id).orElseThrow(() ->
         {
-            log.error(messageConfig.getMessage(MessageError.BORROWING_NOT_FOUND, id));
             return new ResourceNotFoundException(messageConfig.getMessage(MessageError.BORROWING_NOT_FOUND, id));
         });
         if (borrowing.getReturnedDate() != null) {
@@ -75,15 +72,12 @@ public class BorrowingServiceImpl implements BorrowingService {
     @Override
     @Transactional
     public BorrowingResponse addBorrowing(BorrowingRequest request) {
-        log.info("Create new borrowing");
         User userAdded = userRepository.findById(request.getUserId()).orElseThrow(() ->
         {
-            log.error(messageConfig.getMessage(MessageError.USER_NOT_FOUND,  request.getUserId()));
             return new ResourceNotFoundException(messageConfig.getMessage(MessageError.USER_NOT_FOUND , request.getUserId()));
         });
         Book bookAdded = bookRepository.findById(request.getBookId()).orElseThrow(() ->
         {
-            log.error(messageConfig.getMessage(MessageError.BOOK_NOT_FOUND,  request.getBookId()));
             return new ResourceNotFoundException(messageConfig.getMessage(MessageError.BOOK_NOT_FOUND, request.getBookId()));
         });
         if(bookAdded.getQuantity() <= 0){
@@ -240,7 +234,20 @@ public class BorrowingServiceImpl implements BorrowingService {
         return false;
     }*/
 
-   /* @Override
+
+
+    public BorrowingResponse convertBorrowingToDTO(Borrowing borrowing) {
+        BorrowingResponse borrowingDTO = new BorrowingResponse();
+        borrowingDTO.setBorrowingId(borrowing.getId());
+        borrowingDTO.setBorrowingDate(borrowing.getBorrowDate());
+        borrowingDTO.setReturnDate(borrowing.getReturnedDate());
+        borrowingDTO.setUsername(borrowing.getUser().getUserName());
+        borrowingDTO.setBookName(borrowing.getBook().getBookName());
+        borrowingDTO.setStatus(borrowing.getStatus().toString());
+        return borrowingDTO;
+    }
+
+     /* @Override
     public void createBorrowingWorkbook(HttpServletResponse response) throws IOException {
         List<Book> books = borrowingRepository.findCurrentBorrowingBooks();
         Workbook workbook = new XSSFWorkbook();
@@ -261,17 +268,5 @@ public class BorrowingServiceImpl implements BorrowingService {
         workbook.close();
         outputStream.close();
     }*/
-
-    public BorrowingResponse convertBorrowingToDTO(Borrowing borrowing) {
-        BorrowingResponse borrowingDTO = new BorrowingResponse();
-        borrowingDTO.setBorrowingId(borrowing.getId());
-        borrowingDTO.setBorrowingDate(borrowing.getBorrowDate());
-        borrowingDTO.setReturnDate(borrowing.getReturnedDate());
-        borrowingDTO.setUsername(borrowing.getUser().getUserName());
-        borrowingDTO.setBookName(borrowing.getBook().getBookName());
-        borrowingDTO.setStatus(borrowing.getStatus().toString());
-        return borrowingDTO;
-    }
-
 
 }

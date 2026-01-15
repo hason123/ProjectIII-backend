@@ -14,8 +14,7 @@ import com.example.projectiii.exception.GlobalExceptionHandler;
 public class FileUploadUtil {
     public static final long MAX_FILE_SIZE = 20 * 1024 * 1024;
 
-    public static final String IMAGE_PATTERN = "([^\\s]+(\\.(?i)(jpg|png|gif|bmp|webp|jpeg))$)";
-
+    public static final String IMAGE_PATTERN = "(?i)^.*\\.(jpg|jpeg|png|gif|bmp|webp)$";
     public static final String DATE_FORMAT = "yyyyMMddHHmmss";
 
     public static final String FILE_NAME_FORMAT = "%s_%s";
@@ -28,7 +27,7 @@ public class FileUploadUtil {
     public static void assertAllowed(MultipartFile file, String pattern) {
         final long size = file.getSize();
         if (size > MAX_FILE_SIZE) {
-            throw new BusinessException("Max file size is 2MB");
+            throw new BusinessException("Max file size is 20MB");
         }
 
         final String fileName = file.getOriginalFilename();

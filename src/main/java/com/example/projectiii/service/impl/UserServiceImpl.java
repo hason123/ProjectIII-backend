@@ -194,18 +194,22 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     public CloudinaryResponse uploadImage(final Integer id, final MultipartFile file) {
-        final User avatarUser = userRepository.findById(id)
+        final User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        FileUploadUtil.assertAllowed(file, "image");
-        final String cloudinaryImageId = avatarUser.getCloudinaryImageId();
+        // 2. Xóa ảnh cũ trên Cloudinary nếu có
+        final String cloudinaryImageId = user.getCloudinaryImageId();
         if(StringUtils.hasText(cloudinaryImageId)) {
             cloudinaryService.deleteFile(cloudinaryImageId);
         }
+        // 3. Validate
+        FileUploadUtil.assertAllowed(file, FileUploadUtil.IMAGE_PATTERN);
+        // 4. Upload mới
         final String fileName = FileUploadUtil.getFileName(file.getOriginalFilename());
         final CloudinaryResponse response = this.cloudinaryService.uploadFile(file, fileName);
-        avatarUser.setImageUrl(response.getUrl());
-        avatarUser.setCloudinaryImageId(response.getPublicId());
-        userRepository.save(avatarUser);
+        // 5. Lưu vào User
+        user.setImageUrl(response.getUrl());
+        user.setCloudinaryImageId(response.getPublicId());
+        userRepository.save(user);
         return response;
     }
 
@@ -339,7 +343,7 @@ public class UserServiceImpl implements UserService {
                     "Mật khẩu tạm thời của bạn là: " + password + "\n\n" +
                     "Vui lòng đăng nhập và đổi mật khẩu khi lần đầu sử dụng.\n\n" +
                     "Trân trọng,\n" +
-                    "Hệ thống LMS");
+                    "Hệ thống thư viện LibHust");
             mailSender.send(message);
         } catch (Exception e) {
             // Log error but don't fail the user creation if email sending fails

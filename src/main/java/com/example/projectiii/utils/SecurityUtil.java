@@ -34,17 +34,18 @@ public class SecurityUtil {
     @Value("${hayson.jwt.refresh-token-validity-in-seconds}")
     private long refreshTokenExpiration;
 
-    public String createAccessToken(String userName, LoginResponse LoginResponse) {
+    public String createAccessToken(String userName, LoginResponse loginResponse) {
         Instant now = Instant.now();
         Instant validity = now.plus(accessTokenExpiration, ChronoUnit.SECONDS);
 
-        String role = LoginResponse.getUser().getRole();
+        Integer userId = loginResponse.getUser().getId();
+        String role = loginResponse.getUser().getRole();
 
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuedAt(now)
                 .expiresAt(validity)
-                .subject(userName)
-                .claim("user", LoginResponse.getUser())
+                .subject(String.valueOf(userId))
+                .claim("user", loginResponse.getUser())
                 .claim("role", role)
                 .build();
 
@@ -52,15 +53,16 @@ public class SecurityUtil {
         return this.jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims)).getTokenValue();
     }
 
-    public String createRefreshToken(String userName, LoginResponse requestDTO) {
+    public String createRefreshToken(String userName, LoginResponse loginResponse) {
         Instant now = Instant.now();
         Instant validity = now.plus(refreshTokenExpiration, ChronoUnit.SECONDS);
 
+        Integer userId = loginResponse.getUser().getId();
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuedAt(now)
                 .expiresAt(validity)
-                .subject(userName)
-                .claim("user", requestDTO.getUser())
+                .subject(String.valueOf(userId))
+                .claim("user", loginResponse.getUser())
                 .build();
 
         JwsHeader jwsHeader = JwsHeader.with(JWT_ALGORITHM).build();
@@ -86,4 +88,5 @@ public class SecurityUtil {
         }
     }
 }
+
 
