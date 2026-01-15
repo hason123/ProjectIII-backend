@@ -66,8 +66,9 @@ public class BookServiceImpl implements BookService {
         book.setPageCount(request.getPageCount());
         book.setPublisher(request.getPublisher());
         book.setQuantity(request.getQuantity());
-        if (request.getCategoryIDs() != null) {
-            List<Category> categories = request.getCategoryIDs().stream()
+        book.setImageUrl(request.getImageUrl());
+        if (request.getCategoryIds() != null) {
+            List<Category> categories = request.getCategoryIds().stream()
                     .map(categoryID -> categoryRepository.findById(categoryID)
                             .orElseThrow(() ->
                             {
@@ -139,9 +140,12 @@ public class BookServiceImpl implements BookService {
         if (request.getQuantity() != null) {
             updatedBook.setQuantity(request.getQuantity());
         }
+        if (request.getImageUrl() != null) {
+            updatedBook.setImageUrl(request.getImageUrl());
+        }
         else updatedBook.setQuantity(updatedBook.getQuantity());
-        if (request.getCategoryIDs() != null) {
-            List<Category> categories = request.getCategoryIDs().stream()
+        if (request.getCategoryIds() != null) {
+            List<Category> categories = request.getCategoryIds().stream()
                     .map(categoryID -> categoryRepository.findById(categoryID)
                             .orElseThrow(() ->
                             {

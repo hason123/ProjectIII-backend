@@ -24,4 +24,8 @@ public interface BorrowingRepository  extends JpaRepository<Borrowing, Integer> 
     List<Borrowing> findByStatusBorrowingOrDue();*/
 
     List<Borrowing> findByStatus(BorrowingStatus borrowingType);
+
+    boolean existsByUserIdAndBook_BookIdAndStatus(int userId, int bookId, BorrowingStatus borrowingStatus);
+
+    Borrowing findByUserIdAndBook_BookIdAndStatus(int userId, int bookId, BorrowingStatus borrowingStatus);
 }

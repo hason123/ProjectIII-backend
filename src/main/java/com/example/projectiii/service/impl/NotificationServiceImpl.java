@@ -23,11 +23,6 @@ public class NotificationServiceImpl implements NotificationService {
     private final UserService userService;
 
     @Override
-    public void createNotification(User recipient, String title, String message) {
-        createNotification(recipient, title, message, "SYSTEM", null, null);
-    }
-
-    @Override
     public void createNotification(User recipient, String title, String message, String type, String description, String actionUrl) {
         Notification notification = Notification.builder()
                 .recipient(recipient)

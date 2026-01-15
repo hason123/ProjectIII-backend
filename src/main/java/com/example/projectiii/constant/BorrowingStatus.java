@@ -1,7 +1,7 @@
 package com.example.projectiii.constant;
 
 public enum BorrowingStatus {
-    PENDING_APPROVAL,   // Chờ duyệt mượn
+    PENDING,   // Chờ duyệt mượn
     BORROWING,          // Đang mượn
     RENEW_PENDING,      // Đang chờ duyệt gia hạn (quan trọng)
     RETURNED,           // Đã trả
