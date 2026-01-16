@@ -29,4 +29,6 @@ public interface BookService {
     void importExcel(MultipartFile file) throws IOException;
 
     CloudinaryResponse uploadImage(final Integer id, final MultipartFile file);
+
+    PageResponse<BookResponse> getBooksBorrowingStudent(Pageable pageable);
 }

@@ -79,9 +79,9 @@ public class CategoryServiceImpl implements CategoryService {
             else updatedCategory.setCategoryName(request.getCategoryName());
         }
         if(request.getDescription() != null){
-            updatedCategory.setCategoryName(request.getCategoryName());
+            updatedCategory.setDescription(request.getDescription());
         }
-        else updatedCategory.setCategoryName(updatedCategory.getCategoryName());
+        else updatedCategory.setDescription(updatedCategory.getDescription());
         categoryRepository.save(updatedCategory);
         log.info("Updated successfully");
         return convertEntityToDTO(updatedCategory);
@@ -107,8 +107,8 @@ public class CategoryServiceImpl implements CategoryService {
         //Page<CategoryResponse> categoryDTO = categories.map(category -> convertEntityToDTO(category));
         PageResponse<CategoryResponse> categoryPage = new PageResponse<>(
                 categoryDTO.getNumber() + 1,
-                categoryDTO.getNumberOfElements(),
                 categoryDTO.getTotalPages(),
+                categoryDTO.getTotalElements(),
                 categoryDTO.getContent()
         );
         log.info("Returning category page!");
@@ -129,7 +129,7 @@ public class CategoryServiceImpl implements CategoryService {
         //co ve Object[] luu nhieu lieu du lieu khac nhau
         for (Object[] record : result) {
             Category category = (Category) record[0];
-            Integer bookCount = (Integer) record[1];
+            Long bookCount = (Long) record[1];
             Row excelRow = sheet.createRow(rowNum++);
             excelRow.createCell(0).setCellValue(index++);
             excelRow.createCell(1).setCellValue(category.getCategoryName());

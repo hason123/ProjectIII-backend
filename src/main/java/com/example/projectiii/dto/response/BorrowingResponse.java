@@ -19,7 +19,9 @@ public class BorrowingResponse {
     private String bookName;
     private LocalDate borrowingDate;
     private LocalDate returnDate;
+    private LocalDate dueDate;
     private String status;
     private String fullName;
+
 
 }

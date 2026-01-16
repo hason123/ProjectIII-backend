@@ -115,7 +115,7 @@ public class BorrowingServiceImpl implements BorrowingService {
         return convertBorrowingToDTO(borrowing);
     }
 
-    // --- 3. THỦ THƯ TỪ CHỐI YÊU CẦU ---
+
     @Transactional
     @Override
     public void rejectBorrowing(BorrowingRequest request) {
@@ -136,7 +136,7 @@ public class BorrowingServiceImpl implements BorrowingService {
 
     }
 
-    // --- 4. TỰ ĐỘNG QUÉT SÁCH QUÁ HẠN (30 ngày) ---
+
     @Scheduled(cron = "0 0 8 * * *")
     @Transactional
     @Override
@@ -148,8 +148,7 @@ public class BorrowingServiceImpl implements BorrowingService {
         List<Borrowing> activeBorrowings = borrowingRepository.findByStatus(BorrowingStatus.BORROWING);
 
         for (Borrowing borrowing : activeBorrowings) {
-            // Logic: Nếu ngày hiện tại > ngày mượn + 30 ngày (hoặc check theo dueDate nếu đã lưu)
-            // Ở đây dùng borrowDate + 30 ngày cho chắc chắn
+
             LocalDate dueDate = borrowing.getBorrowDate().plusDays(30);
 
             if (today.isAfter(dueDate)) {
@@ -183,7 +182,7 @@ public class BorrowingServiceImpl implements BorrowingService {
         response.setFullName(borrowing.getUser().getFullName());
         // Tính toán DueDate hiển thị (30 ngày từ ngày mượn)
         if (borrowing.getBorrowDate() != null) {
-            response.setBorrowingDate(borrowing.getBorrowDate().plusDays(30));
+            response.setDueDate(borrowing.getBorrowDate().plusDays(30));
         }
         response.setReturnDate(borrowing.getReturnedDate());
         response.setStatus(borrowing.getStatus().toString());
@@ -211,10 +210,75 @@ public class BorrowingServiceImpl implements BorrowingService {
         borrowingRepository.delete(borrowing);
     }
 
+    @Transactional
     @Override
     public BorrowingResponse updateBorrowing(Integer id, BorrowingRequest request) {
-        return null;
+
+        Borrowing borrowing = borrowingRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        messageConfig.getMessage(MessageError.BORROWING_NOT_FOUND, id)));
+
+        BorrowingStatus oldStatus = borrowing.getStatus();
+
+        if (oldStatus == BorrowingStatus.RETURNED) {
+            throw new BusinessException("Phiếu mượn đã trả không thể chỉnh sửa!");
+        }
+        if (request.getReturnDate() != null) {
+            if (oldStatus != BorrowingStatus.BORROWING &&
+                    oldStatus != BorrowingStatus.OVERDUE) {
+                throw new BusinessException("Chỉ được trả sách khi đang mượn hoặc quá hạn!");
+            }
+            borrowing.setReturnedDate(request.getReturnDate());
+            borrowing.setStatus(BorrowingStatus.RETURNED);
+            Book book = borrowing.getBook();
+            book.setQuantity(book.getQuantity() + 1);
+            bookRepository.save(book);
+            borrowingRepository.save(borrowing);
+            if (oldStatus == BorrowingStatus.OVERDUE) {
+                String message = "Bạn đã trả sách quá hạn: '"
+                        + book.getBookName()
+                        + "'. Vui lòng chú ý hạn trả trong lần mượn sau.";
+                notificationService.createNotification(
+                        borrowing.getUser(),
+                        "Đã trả sách quá hạn",
+                        message,
+                        "BORROWING_RETURN_OVERDUE",
+                        null,
+                        null
+                );
+            }
+            return convertBorrowingToDTO(borrowing);
+        }
+
+        if (request.getBorrowingDate() != null) {
+
+            if (oldStatus != BorrowingStatus.BORROWING) {
+                throw new BusinessException("Chỉ được sửa ngày mượn khi đang mượn!");
+            }
+
+            borrowing.setBorrowDate(request.getBorrowingDate());
+            borrowing.setDueDate(request.getBorrowingDate().plusDays(30));
+        }
+
+        borrowingRepository.save(borrowing);
+
+        if (oldStatus == BorrowingStatus.OVERDUE) {
+            String message = "Phiếu mượn sách '"
+                    + borrowing.getBook().getBookName()
+                    + "' của bạn đang ở trạng thái qúa hạn. Vui lòng xử lý sớm!";
+            notificationService.createNotification(
+                    borrowing.getUser(),
+                    "Nhắc nhở sách quá hạn",
+                    message,
+                    "BORROWING_OVERDUE_ACTION",
+                    null,
+                    null
+            );
+        }
+        return convertBorrowingToDTO(borrowing);
     }
+
+
 
     @Override
     public PageResponse<BorrowingResponse> getBorrowingPage(Pageable pageable) {

@@ -28,4 +28,6 @@ public interface BorrowingRepository  extends JpaRepository<Borrowing, Integer> 
     boolean existsByUserIdAndBook_BookIdAndStatus(int userId, int bookId, BorrowingStatus borrowingStatus);
 
     Borrowing findByUserIdAndBook_BookIdAndStatus(int userId, int bookId, BorrowingStatus borrowingStatus);
+
+    Page<Borrowing> findByUserIdAndStatus(int userId, BorrowingStatus status, Pageable pageable);
 }

@@ -40,6 +40,16 @@ public class BookController {
     }
 
     @PreAuthorize("isAuthenticated()")
+    @GetMapping("/books/user/borrowing")
+    public ResponseEntity<PageResponse<BookResponse>> getBooksBorrowingStudent(@RequestParam(value = "pageNumber", required = false, defaultValue = "1") Integer pageNumber,
+                                                                  @RequestParam(value = "pageSize", required = false, defaultValue = "3") Integer pageSize)
+    {
+        Pageable pageable = PageRequest.of(pageNumber - 1, pageSize);//default first pageNumber is 0
+        PageResponse<BookResponse> bookPage = bookService.getBooksBorrowingStudent(pageable);
+        return ResponseEntity.ok(bookPage);
+    }
+
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/books/{id}")
     public ResponseEntity<BookResponse> getBookById(@PathVariable("id") Integer id) {
         BookResponse bookResponse = bookService.getBookById(id);

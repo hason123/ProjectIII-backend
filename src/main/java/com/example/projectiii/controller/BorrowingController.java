@@ -40,6 +40,14 @@ public class BorrowingController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('LIBRARIAN', 'ADMIN')")
+    @PostMapping("/borrowings/{id}")
+    public ResponseEntity<BorrowingResponse> updateBorrowing(@PathVariable Integer id,
+            @RequestBody BorrowingRequest request) {
+        BorrowingResponse response = borrowingService.updateBorrowing(id, request);
+        return ResponseEntity.ok(response);
+    }
+
     @Operation(summary = "Thủ thư từ chối yêu cầu mượn sách")
     @PreAuthorize("hasAnyRole('LIBRARIAN', 'ADMIN')")
     @DeleteMapping("/borrowings/reject")

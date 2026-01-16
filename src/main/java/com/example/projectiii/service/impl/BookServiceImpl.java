@@ -1,6 +1,7 @@
 package com.example.projectiii.service.impl;
 
 import com.example.projectiii.config.MessageConfig;
+import com.example.projectiii.constant.BorrowingStatus;
 import com.example.projectiii.constant.MessageError;
 import com.example.projectiii.dto.request.BookRequest;
 import com.example.projectiii.dto.request.search.SearchBookRequest;
@@ -8,20 +9,23 @@ import com.example.projectiii.dto.response.BookResponse;
 import com.example.projectiii.dto.response.CloudinaryResponse;
 import com.example.projectiii.dto.response.PageResponse;
 import com.example.projectiii.entity.Book;
+import com.example.projectiii.entity.Borrowing;
 import com.example.projectiii.entity.Category;
+import com.example.projectiii.entity.User;
 import com.example.projectiii.exception.ResourceNotFoundException;
 import com.example.projectiii.repository.BookRepository;
+import com.example.projectiii.repository.BorrowingRepository;
 import com.example.projectiii.repository.CategoryRepository;
 import com.example.projectiii.service.BookService;
 import com.example.projectiii.service.CloudinaryService;
+import com.example.projectiii.service.UserService;
 import com.example.projectiii.specification.BookSpecification;
 import com.example.projectiii.utils.FileUploadUtil;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -40,18 +44,15 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
     private final CategoryRepository categoryRepository;
     private final MessageConfig messageConfig;
     private final CloudinaryService cloudinaryService;
-
-    public BookServiceImpl(BookRepository bookRepository, CategoryRepository categoryRepository, MessageConfig messageConfig, CloudinaryService cloudinaryService) {
-        this.bookRepository = bookRepository;
-        this.categoryRepository = categoryRepository;
-        this.messageConfig = messageConfig;
-        this.cloudinaryService = cloudinaryService;
-    }
+    private final UserService userService;
+    private static final DataFormatter DATA_FORMATTER = new DataFormatter();
+    private final BorrowingRepository borrowingRepository;
 
     @Override
     public BookResponse addBook(BookRequest request) {
@@ -270,6 +271,7 @@ public class BookServiceImpl implements BookService {
         header.createCell(6).setCellValue("Ngôn ngữ");
         header.createCell(7).setCellValue("Thể loại");
         header.createCell(8).setCellValue("Số lượng sách");
+        header.createCell(9).setCellValue("Ảnh bìa");
         int rowNum = 1;
         for (Book book : books) {
             Row excelRow = sheet.createRow(rowNum++);
@@ -277,7 +279,12 @@ public class BookServiceImpl implements BookService {
             excelRow.createCell(1).setCellValue(book.getBookName());
             excelRow.createCell(2).setCellValue(book.getAuthor());
             excelRow.createCell(3).setCellValue(book.getPublisher());
-            excelRow.createCell(4).setCellValue(book.getPageCount());
+            Integer pageCount = book.getPageCount();
+            if (pageCount != null) {
+                excelRow.createCell(4).setCellValue(pageCount);
+            } else {
+                excelRow.createCell(4).setCellValue("");
+            }
             excelRow.createCell(5).setCellValue(book.getPrintType());
             excelRow.createCell(6).setCellValue(book.getLanguage());
             List<Category> categories = book.getCategories();
@@ -285,7 +292,13 @@ public class BookServiceImpl implements BookService {
                     .map(Category::getCategoryName)
                     .collect(Collectors.joining(", "));
             excelRow.createCell(7).setCellValue(categoryNames);
-            excelRow.createCell(8).setCellValue(book.getQuantity());
+            Integer quantity = book.getQuantity();
+            if (pageCount != null) {
+                excelRow.createCell(8).setCellValue(quantity);
+            } else {
+                excelRow.createCell(8).setCellValue("");
+            }
+            excelRow.createCell(9).setCellValue(book.getImageUrl());
         }
         response.setHeader("Content-Type", "attachment; filename=borrowing.xlsx");
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
@@ -297,49 +310,99 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public void importExcel(final MultipartFile file) throws IOException {
+    @Transactional
+    public void importExcel(MultipartFile file) throws IOException {
         Workbook workbook = new XSSFWorkbook(file.getInputStream());
-        final Sheet sheet = workbook.getSheetAt(0);
-        final List<Book> validBooks = new ArrayList<>();
-        for (final Row row : sheet) {
-            if (row.getRowNum() == 0) continue; // skip header
-            String bookName = row.getCell(0).getStringCellValue();
-            String author = row.getCell(1).getStringCellValue();
-            String publisher = row.getCell(2).getStringCellValue();
-            Integer pageCount = (int) row.getCell(3).getNumericCellValue();
-            String printType = row.getCell(4).getStringCellValue();
-            String language = row.getCell(5).getStringCellValue();
-            Integer quantity = (int) row.getCell(6).getNumericCellValue();
-            String bookDesc = row.getCell(7).getStringCellValue();
-            String categoryIdsStr = row.getCell(8).getStringCellValue(); // hoặc getNumericCellValue nếu chắc chắn là số
-            String[] categoryIdArr = categoryIdsStr.split(",");
-            // Validate category
-            List<Category> categories = new ArrayList<>();
-            for (String catIdStr : categoryIdArr) {
-                int catId;
-                try {
-                    catId = Integer.parseInt(catIdStr.trim());
-                } catch (NumberFormatException e) {
-                    continue;
-                }
-                Category category = categoryRepository.findById(catId).orElse(null);
-                if (category == null || bookRepository.existsByBookName(bookName)) continue;
-                categories.add(category);
-                Book book = new Book();
-                book.setBookName(bookName);
-                book.setAuthor(author);
-                book.setPublisher(publisher);
-                book.setPageCount(pageCount);
-                book.setPrintType(printType);
-                book.setLanguage(language);
-                book.setQuantity(quantity);
-                book.setBookDesc(bookDesc);
-                book.setCategories(categories);
-                validBooks.add(book);
+        Sheet sheet = workbook.getSheetAt(0);
+
+        List<Book> booksToSave = new ArrayList<>();
+
+        for (Row row : sheet) {
+            if (row.getRowNum() == 0) continue;
+            Cell bookNameCell = row.getCell(0);
+            if (bookNameCell == null || bookNameCell.getStringCellValue().trim().isEmpty()) {
+                continue;
             }
+            String bookName = bookNameCell.getStringCellValue().trim();
+            if (bookRepository.existsByBookName(bookName)) {
+                continue;
+            }
+            Book book = new Book();
+            book.setBookName(bookName);
+            book.setAuthor(getStringCell(row.getCell(1)));
+            book.setPublisher(getStringCell(row.getCell(2)));
+            book.setPageCount(getIntegerCell(row.getCell(3)));
+            book.setPrintType(getStringCell(row.getCell(4)));
+            book.setBookDesc(getStringCell(row.getCell(7)));
+            book.setImageUrl(getStringCell(row.getCell(9)));
+            String langRaw = getStringCell(row.getCell(5)).toLowerCase();
+            if ("en".equals(langRaw)) {
+                book.setLanguage("Tiếng Anh");
+            } else if ("vn".equals(langRaw)) {
+                book.setLanguage("Tiếng Việt");
+            } else {
+                book.setLanguage(langRaw); // fallback
+            }
+            Integer quantity = getIntegerCell(row.getCell(6));
+            book.setQuantity(quantity != null ? quantity : 0);
+            String categoryName = getStringCell(row.getCell(8));
+            List<Category> categories = new ArrayList<>();
+            if (!categoryName.isEmpty()) {
+                Category category = categoryRepository
+                        .findByCategoryName(categoryName)
+                        .orElseGet(() -> {
+                            Category newCat = new Category();
+                            newCat.setCategoryName(categoryName);
+                            return categoryRepository.save(newCat);
+                        });
+                categories.add(category);
+            }
+
+            book.setCategories(categories);
+            booksToSave.add(book);
         }
-        bookRepository.saveAll(validBooks);
+
+        bookRepository.saveAll(booksToSave);
+        workbook.close();
     }
+
+    @Override
+    public PageResponse<BookResponse> getBooksBorrowingStudent(Pageable pageable) {
+        User currentStudent = userService.getCurrentUser();
+        Page<Borrowing> borrowingPage = borrowingRepository.findByUserIdAndStatus(
+                currentStudent.getId(), BorrowingStatus.BORROWING, pageable);
+        Page<BookResponse> bookResponsePage = borrowingPage.map(borrowing -> {
+            Book book = borrowing.getBook();
+            return convertBookToDTO(book);
+        });
+        return new PageResponse<>(
+                bookResponsePage.getNumber() + 1,
+                bookResponsePage.getTotalPages(),
+                bookResponsePage.getTotalElements(),
+                bookResponsePage.getContent()
+        );
+    }
+
+
+
+    private String getStringCell(Cell cell) {
+        if (cell == null) return "";
+        return DATA_FORMATTER.formatCellValue(cell).trim();
+    }
+
+    private Integer getIntegerCell(Cell cell) {
+        if (cell == null) return null;
+
+        String value = DATA_FORMATTER.formatCellValue(cell).trim();
+        if (value.isEmpty()) return null;
+
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
 
     public BookResponse convertBookToDTO(Book book) {
         BookResponse bookDTO = new BookResponse();
